@@ -1,0 +1,7 @@
+.idea/
+api/__pycache__/
+api/migrations/__pycache__/
+backend/.env
+backend/__pycache__/
+db.sqlite3
+/media
