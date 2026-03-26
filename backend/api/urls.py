@@ -8,4 +8,5 @@ urlpatterns = [
     path("register/", views.user_register, name="register"),
     path("token/", jwt_views.TokenObtainPairView.as_view(), name="token"),
     path("refresh/", jwt_views.TokenRefreshView.as_view(), name="refresh"),
+    path("product_retrieve/<int:pk>/", views.ProductRetrieve.as_view(), name="product_retrieve"),
 ]
