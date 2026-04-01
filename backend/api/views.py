@@ -1,5 +1,7 @@
+from time import sleep
+
 from rest_framework import status, generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -78,6 +80,20 @@ class CookieTokenRefreshView(TokenRefreshView):
             return response
         except InvalidToken:
             return Response({"error": "Invalid token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class UserInfo(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = CustomUserSerializer(CustomUser.objects.get(pk=request.user.pk))
+        return Response(user.data, status=HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def is_user_authenticated(request):
+    return Response({"is_user_authenticated": True}, status=HTTP_200_OK)
 
 
 class ProductRetrieve(generics.RetrieveAPIView):
