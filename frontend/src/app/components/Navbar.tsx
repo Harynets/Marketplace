@@ -3,19 +3,26 @@
 import { AppBar, Box, Button, Container, IconButton, Menu, MenuItem, TextField, Toolbar, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PersonIcon from "@mui/icons-material/Person";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-
-const PAGES = [
-    { label: "Профіль", link: "#" },
-    { label: "Обране", link: "#" },
-];
+import Login from "./Login";
+import { isUserAuthenticated } from "../../../utils/auth";
 
 function Navbar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+    const [open, setOpen] = useState<boolean>(false);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const getIsAuthenticated = async () => {
+            let res = await isUserAuthenticated();
+            setIsAuthenticated(res);
+        };
+        getIsAuthenticated();
+    }, []);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -75,13 +82,24 @@ function Navbar() {
                                     onClose={handleCloseNavMenu}
                                     sx={{ display: { xs: "block", md: "none" } }}
                                 >
-                                    {PAGES.map((page) => (
-                                        <Link key={page.label} href={page.link}>
-                                            <MenuItem onClick={handleCloseNavMenu}>
-                                                <Typography sx={{ textAlign: "center" }}>{page.label}</Typography>
-                                            </MenuItem>
-                                        </Link>
-                                    ))}
+                                    <Link
+                                        href={isAuthenticated === true ? "/profile" : "#"}
+                                        onClick={() => {
+                                            if (isAuthenticated === false) {
+                                                setOpen(true);
+                                            }
+                                        }}
+                                    >
+                                        <MenuItem onClick={handleCloseNavMenu}>
+                                            <Typography sx={{ textAlign: "center" }}>Профіль</Typography>
+                                        </MenuItem>
+                                    </Link>
+
+                                    <Link href="#">
+                                        <MenuItem onClick={handleCloseNavMenu}>
+                                            <Typography sx={{ textAlign: "center" }}>Обране</Typography>
+                                        </MenuItem>
+                                    </Link>
                                 </Menu>
 
                                 <Box
@@ -195,12 +213,18 @@ function Navbar() {
                         {/* icons that displayed when width breakpoint larger than sm */}
                         <Box sx={{ flexGrow: 0, display: { xs: "none", sm: "flex" } }}>
                             <IconButton
+                                href={isAuthenticated === true ? "/profile" : "#"}
                                 sx={{
                                     display: "flex",
                                     flexDirection: "column",
                                     borderRadius: "16px",
                                     marginX: { sm: "0px", md: "8px" },
                                     width: "80px",
+                                }}
+                                onClick={() => {
+                                    if (isAuthenticated === false) {
+                                        setOpen(true);
+                                    }
                                 }}
                             >
                                 <PersonIcon />
@@ -236,6 +260,7 @@ function Navbar() {
                     </Toolbar>
                 </Container>
             </AppBar>
+            <Login open={open} setOpen={setOpen} setIsAuthenticated={setIsAuthenticated} />
         </>
     );
 }

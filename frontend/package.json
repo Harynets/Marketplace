@@ -15,10 +15,12 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "@mui/material-nextjs": "^7.3.9",
+    "formik": "^2.4.9",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "swiper": "^12.1.2"
+    "swiper": "^12.1.2",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
