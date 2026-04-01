@@ -8,8 +8,8 @@ import Link from "next/link";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PersonIcon from "@mui/icons-material/Person";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import Login from "./Login";
 import { isUserAuthenticated } from "../../../utils/auth";
+import LoginRegistrationBackdrop from "./LoginRegistrationBackdrop";
 
 function Navbar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -260,7 +260,7 @@ function Navbar() {
                     </Toolbar>
                 </Container>
             </AppBar>
-            <Login open={open} setOpen={setOpen} setIsAuthenticated={setIsAuthenticated} />
+            <LoginRegistrationBackdrop open={open} setOpen={setOpen} setIsAuthenticated={setIsAuthenticated} />
         </>
     );
 }

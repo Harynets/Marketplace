@@ -1,7 +1,7 @@
 import { Alert, Box, Button, TextField } from "@mui/material";
 import { Field, FieldProps, Form, Formik } from "formik";
-import { loginValidationSchema } from "../schemas/loginValidationSchema";
 import { Dispatch, SetStateAction, useState } from "react";
+import { registrationValidationSchema } from "../schemas/registrationValidationSchema";
 import { login } from "../../../utils/auth";
 
 interface Props {
@@ -9,9 +9,8 @@ interface Props {
     setIsAuthenticated: Dispatch<SetStateAction<boolean | null>>;
 }
 
-function Login({ setOpen, setIsAuthenticated }: Props) {
+function Registration({ setOpen, setIsAuthenticated }: Props) {
     const [alertError, setAlertError] = useState<string>("");
-
     return (
         <Box>
             {alertError ? (
@@ -20,22 +19,73 @@ function Login({ setOpen, setIsAuthenticated }: Props) {
                 </Alert>
             ) : null}
             <Formik
-                initialValues={{ email: "", password: "" }}
-                validationSchema={loginValidationSchema}
+                initialValues={{ first_name: "", last_name: "", email: "", password: "" }}
+                validationSchema={registrationValidationSchema}
                 validateOnChange={false}
                 onSubmit={async (values, { setSubmitting }) => {
-                    let response = await login(values.email, values.password);
+                    let response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register/`, {
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify({
+                            first_name: values.first_name,
+                            last_name: values.last_name,
+                            email: values.email,
+                            password: values.password,
+                        }),
+                        headers: {
+                            "Content-type": "application/json",
+                        },
+                    });
 
-                    if (response.status === 200) {
+                    if (response.status === 201) {
+                        login(values.email, values.password);
                         setOpen(false);
                         setIsAuthenticated(true);
                     } else {
-                        setAlertError("Пароль або адреса електронної пошти некоректні");
+                        setAlertError("Помилка при реєстрації");
                     }
                 }}
             >
                 {({ isSubmitting }) => (
                     <Form style={{ display: "flex", flexDirection: "column" }}>
+                        <Box sx={{ marginBottom: "20px" }}>
+                            <Field name="first_name">
+                                {({ field, meta }: FieldProps) => (
+                                    <TextField
+                                        {...field}
+                                        onFocus={() => {
+                                            if (alertError) {
+                                                setAlertError("");
+                                            }
+                                        }}
+                                        type="text"
+                                        label="Ім'я"
+                                        error={meta.touched && Boolean(meta.error)}
+                                        helperText={meta.touched && meta.error}
+                                        fullWidth
+                                    />
+                                )}
+                            </Field>
+                        </Box>
+                        <Box sx={{ marginBottom: "20px" }}>
+                            <Field name="last_name">
+                                {({ field, meta }: FieldProps) => (
+                                    <TextField
+                                        {...field}
+                                        onFocus={() => {
+                                            if (alertError) {
+                                                setAlertError("");
+                                            }
+                                        }}
+                                        type="text"
+                                        label="Прізвище"
+                                        error={meta.touched && Boolean(meta.error)}
+                                        helperText={meta.touched && meta.error}
+                                        fullWidth
+                                    />
+                                )}
+                            </Field>
+                        </Box>
                         <Box sx={{ marginBottom: "20px" }}>
                             <Field name="email">
                                 {({ field, meta }: FieldProps) => (
@@ -75,7 +125,7 @@ function Login({ setOpen, setIsAuthenticated }: Props) {
                             </Field>
                         </Box>
                         <Button sx={{ color: "white" }} type="submit" variant="contained" color="main" disabled={isSubmitting}>
-                            Увійти
+                            Зареєструватися
                         </Button>
                     </Form>
                 )}
@@ -84,4 +134,4 @@ function Login({ setOpen, setIsAuthenticated }: Props) {
     );
 }
 
-export default Login;
+export default Registration;

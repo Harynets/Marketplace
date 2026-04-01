@@ -27,3 +27,17 @@ export const refreshToken = async () => {
     });
     return res.status === 200;
 };
+
+export const login = async (email: string, password: string) => {
+    return await fetch(`${process.env.NEXT_PUBLIC_API_URL}/token/`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify({
+            email: email,
+            password: password,
+        }),
+        headers: {
+            "Content-type": "application/json",
+        },
+    });
+};
