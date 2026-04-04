@@ -1,5 +1,4 @@
-from time import sleep
-
+from django.shortcuts import get_object_or_404
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -8,12 +7,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from starlette.status import HTTP_200_OK
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from backend.settings import SIMPLE_JWT
 
-from .models import Product, CustomUser
-from .serializers import UserRegisterSerializer, ProductSerializer, LoginUserSerializer, CustomUserSerializer
+from .models import Product, CustomUser, Cart, CartItem
+from .serializers import UserRegisterSerializer, ProductSerializer, LoginUserSerializer, CustomUserSerializer, \
+    CartSerializer, CartItemSerializer
 
 
 @api_view(["GET"])
@@ -26,6 +26,7 @@ def user_register(request):
     serializer = UserRegisterSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
+        Cart.objects.create(user=user)
         refresh = RefreshToken.for_user(user)
         return Response({"user": serializer.data, "refresh": str(refresh), "access": str(refresh.access_token)},
                         status=status.HTTP_201_CREATED)
@@ -102,3 +103,55 @@ class ProductRetrieve(generics.RetrieveAPIView):
     lookup_field = "pk"
 
 
+class CartRetrieve(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+
+    def get_object(self):
+        return Cart.objects.get(user=self.request.user)
+
+
+class AddCartItem(generics.CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CartItemSerializer
+    queryset = CartItem.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        product = get_object_or_404(Product, pk=request.data.get("product_id"))
+        cart = Cart.objects.get(user=request.user)
+
+        if not product.is_available:
+            return Response({"result":"product is not available!"}, status=HTTP_400_BAD_REQUEST)
+
+        if product in [item.product for item in cart.cart_items.all()]:
+            return Response({"result":"item already in the cart!"}, status=HTTP_400_BAD_REQUEST)
+
+        CartItem.objects.create(product=product, cart=cart, quantity=1)
+
+        return Response({"result":"item created"}, status=HTTP_201_CREATED)
+
+
+class DeleteCartItem(generics.DestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CartItemSerializer
+    queryset = CartItem.objects.all()
+
+    def destroy(self, request, *args, **kwargs):
+        cart_item = get_object_or_404(CartItem, pk=request.data.get("cart_item_id"), cart__user=request.user)
+        cart_item.delete()
+
+        return Response({"result":"cart item deleted"}, status=HTTP_200_OK)
+
+
+class UpdateCartItem(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CartItemSerializer
+    queryset = CartItem.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        cart_item = get_object_or_404(CartItem, pk=request.data.get("cart_item_id"), cart__user=request.user)
+        cart_item.quantity = request.data.get("quantity")
+        cart_item.save()
+
+        return Response({"result": "updated"}, status=HTTP_200_OK)
