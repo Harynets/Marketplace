@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import ForeignKey, OneToOneField
 
 
 # authentication with email instead of username
@@ -162,3 +163,31 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = "Товар в замовленні"
         verbose_name_plural = "Товари в замовленні"
+
+
+class Cart(models.Model):
+    user = OneToOneField(CustomUser, models.CASCADE, related_name="cart")
+
+    @property
+    def full_price(self):
+        return round(sum(item.product.price * item.quantity *((100 - item.product.discount) / 100 if item.product.discount else 1) for item in self.cart_items.all()), 2)
+
+    def __str__(self):
+        return f"Кошик користувача {self.user}"
+
+    class Meta:
+        verbose_name = "Кошик"
+        verbose_name_plural = "Кошики"
+
+
+class CartItem(models.Model):
+    quantity = models.IntegerField(validators=[MinValueValidator(1)])
+    product = ForeignKey(Product, models.CASCADE)
+    cart = ForeignKey(Cart, models.CASCADE, related_name="cart_items")
+
+    def __str__(self):
+        return f"Товар {self.product} в кошику {self.cart}"
+
+    class Meta:
+        verbose_name = "Товар в кошику"
+        verbose_name_plural = "Товари в кошиках"
