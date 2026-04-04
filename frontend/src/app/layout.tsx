@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import MuiTheme from "./theme/MuiTheme";
 import Navbar from "./components/Navbar";
+import { AuthProvider } from "./context/AuthContext";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -30,8 +31,10 @@ export default function RootLayout({
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <AppRouterCacheProvider>
                     <MuiTheme>
-                        <Navbar />
-                        {children}
+                        <AuthProvider>
+                            <Navbar />
+                            {children}
+                        </AuthProvider>
                     </MuiTheme>
                 </AppRouterCacheProvider>
             </body>
