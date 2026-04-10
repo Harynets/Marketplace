@@ -10,7 +10,7 @@ function ProductNavigation() {
         <ButtonGroup variant="outlined" sx={{ marginBottom: "12px" }}>
             {navigationButtons.map((value, index) => {
                 return (
-                    <Button key={index} href={value.navigateTo} color="success" size="large">
+                    <Button key={index} href={value.navigateTo} color="main" size="large">
                         {value.title}
                     </Button>
                 );

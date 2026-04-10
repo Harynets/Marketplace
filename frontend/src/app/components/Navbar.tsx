@@ -10,11 +10,14 @@ import PersonIcon from "@mui/icons-material/Person";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { isUserAuthenticated } from "../../../utils/auth";
 import LoginRegistrationBackdrop from "./LoginRegistrationBackdrop";
+import { useRouter } from "next/navigation";
 
 function Navbar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [open, setOpen] = useState<boolean>(false);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+    const router = useRouter();
 
     useEffect(() => {
         const getIsAuthenticated = async () => {
@@ -82,18 +85,21 @@ function Navbar() {
                                     onClose={handleCloseNavMenu}
                                     sx={{ display: { xs: "block", md: "none" } }}
                                 >
-                                    <Link
-                                        href={isAuthenticated === true ? "/profile" : "#"}
+                                    <Box
                                         onClick={() => {
-                                            if (isAuthenticated === false) {
-                                                setOpen(true);
+                                            if (isAuthenticated) {
+                                                router.push("/profile");
+                                            } else {
+                                                if (isAuthenticated === false) {
+                                                    setOpen(true);
+                                                }
                                             }
                                         }}
                                     >
                                         <MenuItem onClick={handleCloseNavMenu}>
                                             <Typography sx={{ textAlign: "center" }}>Профіль</Typography>
                                         </MenuItem>
-                                    </Link>
+                                    </Box>
 
                                     <Link href="#">
                                         <MenuItem onClick={handleCloseNavMenu}>
@@ -143,6 +149,7 @@ function Navbar() {
                                 />
                             </Box>
                             <IconButton
+                                href="/cart/"
                                 sx={{
                                     display: "flex",
                                     flexDirection: "column",
@@ -213,7 +220,6 @@ function Navbar() {
                         {/* icons that displayed when width breakpoint larger than sm */}
                         <Box sx={{ flexGrow: 0, display: { xs: "none", sm: "flex" } }}>
                             <IconButton
-                                href={isAuthenticated === true ? "/profile" : "#"}
                                 sx={{
                                     display: "flex",
                                     flexDirection: "column",
@@ -222,8 +228,12 @@ function Navbar() {
                                     width: "80px",
                                 }}
                                 onClick={() => {
-                                    if (isAuthenticated === false) {
-                                        setOpen(true);
+                                    if (isAuthenticated) {
+                                        router.push("/profile");
+                                    } else {
+                                        if (isAuthenticated === false) {
+                                            setOpen(true);
+                                        }
                                     }
                                 }}
                             >
@@ -245,6 +255,7 @@ function Navbar() {
                             </IconButton>
 
                             <IconButton
+                                href="/cart/"
                                 sx={{
                                     display: "flex",
                                     flexDirection: "column",
