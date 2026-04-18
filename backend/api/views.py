@@ -8,17 +8,10 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
-
 from backend.settings import SIMPLE_JWT
-
 from .models import Product, CustomUser, Cart, CartItem
 from .serializers import UserRegisterSerializer, ProductSerializer, LoginUserSerializer, CustomUserSerializer, \
     CartSerializer, CartItemSerializer
-
-
-@api_view(["GET"])
-def test(request):
-    return Response({"text": "Hello world!"})
 
 
 @api_view(["POST"])
@@ -155,3 +148,8 @@ class UpdateCartItem(generics.UpdateAPIView):
         cart_item.save()
 
         return Response({"result": "updated"}, status=HTTP_200_OK)
+
+
+class ProductList(generics.ListAPIView):
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
