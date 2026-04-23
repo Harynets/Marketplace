@@ -9,9 +9,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from backend.settings import SIMPLE_JWT
-from .models import Product, CustomUser, Cart, CartItem
+from .models import Product, CustomUser, Cart, CartItem, OrderItem
 from .serializers import UserRegisterSerializer, ProductSerializer, LoginUserSerializer, CustomUserSerializer, \
-    CartSerializer, CartItemSerializer
+    CartSerializer, CartItemSerializer, OrderSerializer
 
 
 @api_view(["POST"])
@@ -153,3 +153,32 @@ class UpdateCartItem(generics.UpdateAPIView):
 class ProductList(generics.ListAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
+
+
+class CreateOrder(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = OrderSerializer
+
+    def post(self, request, *args, **kwargs):
+        # check if user has anything in the cart
+        cart = Cart.objects.filter(user=self.request.user).first()
+        if not cart.cart_items.exists():
+            return Response({"error": "cart is empty"}, status=HTTP_400_BAD_REQUEST)
+
+        serializer = OrderSerializer(data=request.data)
+
+
+        if serializer.is_valid():
+            order = serializer.save(user=request.user)
+
+            # create order_items from the cart_items
+            for item in cart.cart_items.all():
+                order_item = OrderItem(quantity=item.quantity, price_at_order=item.product.price,
+                                       discount_at_order=item.product.discount, product=item.product, order=order)
+                order_item.save()
+
+            # delete all items from the user cart
+            cart.cart_items.all().delete()
+
+            return Response({"result":"ok"}, status=HTTP_201_CREATED)
+        return Response({"error": "data is not valid"}, status=HTTP_400_BAD_REQUEST)

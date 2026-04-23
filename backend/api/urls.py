@@ -13,5 +13,6 @@ urlpatterns = [
     path("add_cart_item/", views.AddCartItem.as_view(), name="add_cart_item"),
     path("delete_cart_item/", views.DeleteCartItem.as_view(), name="delete_cart_item"),
     path("update_cart_item/", views.UpdateCartItem.as_view(), name="update_cart_item"),
-    path("product_list/", views.ProductList.as_view(), name="product_list")
+    path("product_list/", views.ProductList.as_view(), name="product_list"),
+    path("create_order/", views.CreateOrder.as_view(), name="create_order")
 ]

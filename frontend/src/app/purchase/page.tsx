@@ -1,12 +1,15 @@
 "use client";
-import { Box, Button, CircularProgress, Grid, Paper, Typography } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
-import { CartInterface } from "../types/CartInterface";
-import { AuthContext } from "../context/AuthContext";
-import { useRouter } from "next/navigation";
-import CartList from "./components/CartList";
 
-function Cart() {
+import { useContext, useEffect, useState } from "react";
+import PurchaseDetails from "./components/PurchaseDetails";
+import { AuthContext } from "../context/AuthContext";
+import { CartInterface } from "../types/CartInterface";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
+import ProductsToPurchase from "./components/ProductsToPurchase";
+import PurchasePrice from "./components/PurchasePrice";
+
+function Purchase() {
     const [data, setData] = useState<CartInterface>();
 
     const context = useContext(AuthContext);
@@ -39,13 +42,12 @@ function Cart() {
         cartRetrieve(true);
     }, []);
 
+    // redirect if no items in cart
     useEffect(() => {
-        if (context.isAuthenticated === false) {
-            context.checkAuth().then(() => {
-                router.replace("/");
-            });
+        if (data !== undefined && data.cart_items.length === 0) {
+            router.push("/");
         }
-    }, [context.isAuthenticated]);
+    }, [data]);
 
     if (context.isAuthenticated === null) {
         return (
@@ -67,37 +69,26 @@ function Cart() {
         );
     }
 
-    if (!data) {
-        return;
-    }
-
     return (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <Paper variant="outlined" sx={{ width: "70%", padding: "20px" }}>
-                <Typography variant="h5" sx={{ marginBottom: "30px" }}>
-                    Кошик
-                </Typography>
-
-                {data.cart_items?.length > 0 ? (
-                    <>
-                        <CartList data={data} setData={setData} />
-                        <Grid container spacing={2} sx={{ marginTop: "54px" }}>
-                            <Grid size={6}>
-                                <Button sx={{ color: "white" }} href="/purchase" color="main" variant="contained">
-                                    Оформити замовлення
-                                </Button>
-                            </Grid>
-                            <Grid size={6} sx={{ display: "flex", justifyContent: "end" }}>
-                                <Typography variant="h5">Загальна сума: {Number(data.full_price).toFixed(2)} ₴</Typography>
-                            </Grid>
-                        </Grid>
-                    </>
-                ) : (
-                    <Typography variant="h5">Кошик пустий. Час це виправити!</Typography>
-                )}
-            </Paper>
-        </Box>
+        <>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <Box sx={{ width: "70%" }}>
+                    <Typography variant="h5" sx={{ marginBottom: "30px" }}>
+                        Оформлення замовлення
+                    </Typography>
+                </Box>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <Box sx={{ width: "70%", display: "flex" }}>
+                    <PurchaseDetails />
+                    <Box sx={{ width: "35%" }}>
+                        <PurchasePrice data={data} />
+                        <ProductsToPurchase data={data} />
+                    </Box>
+                </Box>
+            </Box>
+        </>
     );
 }
 
-export default Cart;
+export default Purchase;
