@@ -13,7 +13,7 @@ function PurchasePrice({ data }: Props) {
                 <Divider />
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography variant="h6">Товари на суму</Typography>
-                    <Typography>{data?.full_price} ₴</Typography>
+                    <Typography>{data?.total_price} ₴</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography variant="h6">Вартість доставки</Typography>
@@ -22,7 +22,7 @@ function PurchasePrice({ data }: Props) {
                 <Divider />
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Typography>До сплати</Typography>
-                    <Typography variant="h6">{data?.full_price} ₴</Typography>
+                    <Typography variant="h6">{data?.total_price} ₴</Typography>
                 </Box>
             </Stack>
         </Paper>

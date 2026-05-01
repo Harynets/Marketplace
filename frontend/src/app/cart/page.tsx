@@ -88,7 +88,7 @@ function Cart() {
                                 </Button>
                             </Grid>
                             <Grid size={6} sx={{ display: "flex", justifyContent: "end" }}>
-                                <Typography variant="h5">Загальна сума: {Number(data.full_price).toFixed(2)} ₴</Typography>
+                                <Typography variant="h5">Загальна сума: {Number(data.total_price).toFixed(2)} ₴</Typography>
                             </Grid>
                         </Grid>
                     </>

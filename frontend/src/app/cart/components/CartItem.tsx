@@ -36,7 +36,7 @@ function CartItem({ item, setData, mainImage }: Props) {
                 setData((data) => {
                     if (!data) return data;
                     return {
-                        full_price: (Number(data.full_price) - price * item.quantity).toString(),
+                        total_price: (Number(data.total_price) - price * item.quantity).toString(),
                         cart_items: data?.cart_items.filter((item) => {
                             return item.id !== item_id;
                         }),

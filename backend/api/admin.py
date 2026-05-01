@@ -1,5 +1,5 @@
 from django.contrib import admin
-from api.models import CustomUser, Category, Product, ProductImage, Review, Order, OrderItem, Cart, CartItem
+from api.models import CustomUser, Category, Product, ProductImage, Review, Order, OrderItem, Cart, CartItem, Seller
 
 admin.site.register(CustomUser)
 admin.site.register(Category)
@@ -10,3 +10,4 @@ admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(Cart)
 admin.site.register(CartItem)
+admin.site.register(Seller)

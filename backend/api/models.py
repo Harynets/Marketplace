@@ -2,7 +2,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import ForeignKey, OneToOneField
+from django.db.models import ForeignKey, OneToOneField, CheckConstraint, Q
 
 
 # authentication with email instead of username
@@ -57,6 +57,17 @@ class Category(models.Model):
         verbose_name_plural = "Категорії"
 
 
+class Seller(models.Model):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"Продавець {self.name}"
+
+    class Meta:
+        verbose_name = "Продавець"
+        verbose_name_plural = "Продавці"
+
+
 class Product(models.Model):
     name = models.CharField(max_length=160)
     price = models.DecimalField(max_digits=14, decimal_places=2)
@@ -65,7 +76,7 @@ class Product(models.Model):
     description = models.TextField()
     quantity_in_stock = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_available = models.BooleanField(default=True)
-    seller = models.CharField(max_length=150)
+    seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, related_name="products", blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name="products", blank=True, null=True)
 
     # set is_available to False if there is no products left
@@ -80,6 +91,17 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Товар"
         verbose_name_plural = "Товари"
+
+        constraints = [
+            CheckConstraint(
+                check=Q(quantity_in_stock__gte=0),
+                name="product_quantity_gte_0"
+            ),
+            CheckConstraint(
+                check=Q(discount__isnull=True) | (Q(discount__gte=0) & Q(discount__lte=100)),
+                name="product_discount_0_100"
+            ),
+        ]
 
 
 class ProductImage(models.Model):
@@ -167,10 +189,6 @@ class OrderItem(models.Model):
 
 class Cart(models.Model):
     user = OneToOneField(CustomUser, models.CASCADE, related_name="cart")
-
-    @property
-    def full_price(self):
-        return round(sum(item.product.price * item.quantity *((100 - item.product.discount) / 100 if item.product.discount else 1) for item in self.cart_items.all()), 2)
 
     def __str__(self):
         return f"Кошик користувача {self.user}"

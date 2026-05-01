@@ -7,7 +7,7 @@ interface ProductInterface {
     description: string;
     quantity_in_stock: number;
     is_available: boolean;
-    seller: string;
+    seller: { name: string };
     category: number;
     images: ProductImageInterface[];
     reviews: ReviewInterface[];

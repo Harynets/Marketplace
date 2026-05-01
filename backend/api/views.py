@@ -1,3 +1,5 @@
+from django.db import connection
+from django.db.models import Func, F
 from django.shortcuts import get_object_or_404
 from rest_framework import status, generics
 from rest_framework.decorators import api_view, permission_classes
@@ -102,7 +104,12 @@ class CartRetrieve(generics.RetrieveAPIView):
     serializer_class = CartSerializer
 
     def get_object(self):
-        return Cart.objects.get(user=self.request.user)
+        return Cart.objects.annotate(
+            total_price=Func(
+                F("id"),
+                function="dbo.calculate_cart_total"
+            )
+        ).get(user=self.request.user)
 
 
 class AddCartItem(generics.CreateAPIView):
@@ -160,25 +167,37 @@ class CreateOrder(generics.GenericAPIView):
     serializer_class = OrderSerializer
 
     def post(self, request, *args, **kwargs):
-        # check if user has anything in the cart
-        cart = Cart.objects.filter(user=self.request.user).first()
-        if not cart.cart_items.exists():
-            return Response({"error": "cart is empty"}, status=HTTP_400_BAD_REQUEST)
-
         serializer = OrderSerializer(data=request.data)
 
+        if not serializer.is_valid():
+            return Response({"error": "data is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.is_valid():
-            order = serializer.save(user=request.user)
+        shipping_address = serializer.validated_data["shipping_address"]
 
-            # create order_items from the cart_items
-            for item in cart.cart_items.all():
-                order_item = OrderItem(quantity=item.quantity, price_at_order=item.product.price,
-                                       discount_at_order=item.product.discount, product=item.product, order=order)
-                order_item.save()
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                DECLARE @order_id INT, @result_code INT;
 
-            # delete all items from the user cart
-            cart.cart_items.all().delete()
+                EXEC dbo.sp_create_order_from_cart
+                    @user_id = %s,
+                    @shipping_address = %s,
+                    @order_id = @order_id OUTPUT,
+                    @result_code = @result_code OUTPUT;
 
-            return Response({"result":"ok"}, status=HTTP_201_CREATED)
-        return Response({"error": "data is not valid"}, status=HTTP_400_BAD_REQUEST)
+                SELECT @order_id, @result_code;
+            """, [request.user.id, shipping_address])
+
+            row = cursor.fetchone()
+            order_id, result_code = row
+
+        # process codes
+        if result_code == 0:
+            return Response({"result": "ok", "order_id": order_id}, status=status.HTTP_201_CREATED)
+
+        elif result_code == 1:
+            return Response({"error": "cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+        elif result_code == 2:
+            return Response({"error": "not enough stock"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"error": "database error"}, status=status.HTTP_400_BAD_REQUEST)

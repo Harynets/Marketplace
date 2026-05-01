@@ -51,7 +51,7 @@ function QuantityInput({ cartItemId, quantity, price, setData }: Props) {
                         setData((data) => {
                             if (!data) return data;
                             return {
-                                full_price: (Number(data.full_price) - price).toString(),
+                                total_price: (Number(data.total_price) - price).toString(),
                                 cart_items: data.cart_items.map((item) =>
                                     item.id === cartItemId ? { ...item, quantity: value - 1 } : item,
                                 ),
@@ -87,7 +87,7 @@ function QuantityInput({ cartItemId, quantity, price, setData }: Props) {
                     setData((data) => {
                         if (!data) return data;
                         return {
-                            full_price: (Number(data.full_price) + price).toString(),
+                            total_price: (Number(data.total_price) + price).toString(),
                             cart_items: data.cart_items.map((item) =>
                                 item.id === cartItemId ? { ...item, quantity: value + 1 } : item,
                             ),

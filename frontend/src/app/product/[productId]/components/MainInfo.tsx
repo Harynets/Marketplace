@@ -75,7 +75,7 @@ function MainInfo({ data }: Props) {
                     </Box>
                     <Box sx={{ marginBottom: "14px", display: "flex" }}>
                         <Typography color="textSecondary">{"Продавець:\u00A0"}</Typography>
-                        <Typography>{data.seller}</Typography>
+                        <Typography>{data.seller.name}</Typography>
                     </Box>
                     {data.is_available ? (
                         <Typography sx={{ color: "green", marginBottom: "14px" }}>
